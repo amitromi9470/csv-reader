@@ -26,12 +26,14 @@ function baseRow(overrides = {}) {
 const baseRows = []
 let rowNum = 1
 
+const baseInvoiceStartDates = ['2025-01-01', '2025-02-15', '2025-04-01', '2025-05-10', '2025-06-01', '2025-08-01', '2025-09-15', '2025-11-01']
 // 1-20: Positive (quote match) - PO001-PO005, various sites
 for (let i = 1; i <= 20; i++) {
   const po = `PO00${(i % 5) + 1}`
   const sites = ['DA1', 'CH1', 'AM2', 'DA2', 'CH2']
   const qty = i % 2 === 0 ? 5 + (i % 4) : 1
   const up = i % 2 === 0 ? 10 : 100
+  const startDate = baseInvoiceStartDates[i % baseInvoiceStartDates.length]
   baseRows.push(baseRow({
     invoice_number: `INV-${String(i).padStart(4, '0')}`,
     invoice_date: '2025-01-15',
@@ -42,11 +44,11 @@ for (let i = 1; i <= 20; i++) {
     quantity: qty,
     unit_price: up,
     line_level_amount: qty * up,
-    'renewal term': 12,
-    first_Price_increment_applicable_after: 5,
-    price_increase_percentage: 3,
-    invoice_start_date: '2025-01-01',
-    service_start_date: '2025-01-01',
+    'renewal term': 12 + (i % 2) * 12,
+    first_Price_increment_applicable_after: 5 + (i % 3),
+    price_increase_percentage: 2 + (i % 4),
+    invoice_start_date: startDate,
+    service_start_date: startDate,
     country: 'United States',
     region: 'Americas'
   }))
@@ -137,9 +139,10 @@ for (let i = 33; i <= 55; i++) {
   const desc = rateCardDescriptions[(i - 33) % rateCardDescriptions.length]
   const isMissingServiceStart = i >= 52
   const up = i === 54 ? 0 : (desc.indexOf('Power') !== -1 ? 12 : desc.indexOf('Smart') !== -1 ? 150 : 200)
+  const svcStart = isMissingServiceStart ? '' : '2025-06-01'
   baseRows.push(baseRow({
     invoice_number: `INV-${i}`,
-    invoice_date: '2025-01-15',
+    invoice_date: '2025-06-15',
     po_number: 'PO-RC',
     IBX: 'DA1',
     item_code: '',
@@ -147,8 +150,8 @@ for (let i = 33; i <= 55; i++) {
     quantity: 1,
     unit_price: up,
     line_level_amount: up,
-    invoice_start_date: isMissingServiceStart ? '' : '2025-01-01',
-    service_start_date: isMissingServiceStart ? '' : '2025-01-01',
+    invoice_start_date: svcStart,
+    service_start_date: svcStart,
     country: 'United States',
     region: 'Americas'
   }))
@@ -157,15 +160,15 @@ for (let i = 33; i <= 55; i++) {
 // One row with price over rate card (fail rate card)
 baseRows.push(baseRow({
   invoice_number: 'INV-56',
-  invoice_date: '2025-01-15',
+  invoice_date: '2025-06-15',
   po_number: 'PO-RC',
   IBX: 'DA1',
   description: 'AC Power kVA',
   quantity: 1,
   unit_price: 500,
   line_level_amount: 500,
-  invoice_start_date: '2025-01-01',
-  service_start_date: '2025-01-01',
+  invoice_start_date: '2025-06-01',
+  service_start_date: '2025-06-01',
   country: 'United States',
   region: 'Americas'
 }))
@@ -185,6 +188,7 @@ const quotePoSites = [
   { po: 'PO004', site: 'DA2' }, { po: 'PO004', site: 'DA2' },
   { po: 'PO005', site: 'CH2' }, { po: 'PO005', site: 'CH2' }
 ]
+const quoteInvoiceStartDates = ['2024-01-01', '2024-03-15', '2024-06-01', '2024-09-01', '2025-01-01', '2025-04-01', '2025-07-01', '2025-10-01']
 for (let i = 0; i < 55; i++) {
   const { po, site } = quotePoSites[i % 10]
   const isRecurring = i % 2 === 0
@@ -196,7 +200,11 @@ for (let i = 0; i < 55; i++) {
     'Changed Item Description': isRecurring ? 'Test Service Monthly' : 'Setup Fee One Time',
     'Quantity': isRecurring ? 10 : 2,
     'MRC': isRecurring ? 10 : '',
-    'OTC': isRecurring ? '' : 100
+    'OTC': isRecurring ? '' : 100,
+    'Invoice start date': quoteInvoiceStartDates[i % quoteInvoiceStartDates.length],
+    'first_Price_increment_applicable_after': 5 + (i % 3),
+    'renewal term': 12 + (i % 2) * 12,
+    'price_increase_percentage': 2 + (i % 4)
   })
 }
 
@@ -219,7 +227,7 @@ const rcTypes = [
   { sub_type: 'Smart Hands', price_field: 'u_rate', price: 150 },
   { sub_type: 'Equinix Precision Time', price_field: 'u_std_ntp_non_red', price: 50, std_ptp: 60, ent_ntp: 80, ent_ptp: 90 }
 ]
-const rateCardCols = ['u_rate_card_type', 'u_rate_card', 'u_rate_card_sub_type', 'u_country', 'u_region', 'u_effective_from', 'effective_till', 'u_icb_flag', 'u_pricekva', 'u_minimum_cabinet_density', 'u_rate', 'u_amps', 'u_volt', 'u_nrc', 'u_std_ntp_non_red', 'u_std_ptp_non_red', 'u_ent_ntp_non_red', 'u_ent_ptp_non_red', 'IBX']
+const rateCardCols = ['u_rate_card_type', 'u_rate_card', 'u_rate_card_sub_type', 'u_country', 'u_region', 'u_effective_from', 'effective_till', 'u_icb_flag', 'u_all_ibx', 'u_ibxs', 'u_excluded_ibxs', 'u_pricekva', 'u_minimum_cabinet_density', 'u_rate', 'u_amps', 'u_volt', 'u_nrc', 'u_std_ntp_non_red', 'u_std_ptp_non_red', 'u_ent_ntp_non_red', 'u_ent_ptp_non_red', 'IBX']
 function rcRow(overrides = {}) {
   const row = {}
   rateCardCols.forEach(c => { row[c] = '' })
@@ -237,9 +245,12 @@ for (let i = 0; i < 55; i++) {
     u_rate_card_sub_type: rc.sub_type,
     u_country: countries[i % 3],
     u_region: regions[i % 3],
-    u_effective_from: '2024-01-01',
-    effective_till: '2026-12-31',
+    u_effective_from: '2025-04-01',
+    effective_till: '2026-03-31',
     u_icb_flag: false,
+    u_all_ibx: true,
+    u_ibxs: '',
+    u_excluded_ibxs: '',
     IBX: 'DA1'
   })
   if (rc.price_field === 'u_pricekva') {
@@ -270,11 +281,13 @@ rcRows.push(rcRow({
   u_rate_card_sub_type: 'Space & Power',
   u_country: 'United States',
   u_region: 'Americas',
-  u_effective_from: '2024-01-01',
-  effective_till: '2026-12-31',
+  u_effective_from: '2025-04-01',
+  effective_till: '2026-03-31',
   u_pricekva: 10,
   u_minimum_cabinet_density: 'Standard',
   u_icb_flag: true,
+  u_all_ibx: true,
+  u_excluded_ibxs: '',
   IBX: 'DA1'
 }))
 rcRows.push(rcRow({
@@ -283,10 +296,12 @@ rcRows.push(rcRow({
   u_rate_card_sub_type: 'Smart Hands',
   u_country: 'United States',
   u_region: 'Americas',
-  u_effective_from: '2024-01-01',
-  effective_till: '2026-12-31',
+  u_effective_from: '2025-04-01',
+  effective_till: '2026-03-31',
   u_rate: 120,
   u_icb_flag: true,
+  u_all_ibx: true,
+  u_excluded_ibxs: '',
   IBX: 'DA1'
 }))
 

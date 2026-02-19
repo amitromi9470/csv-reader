@@ -25,6 +25,13 @@ function ValidationResults({ results }) {
         (r.qli_site_id || '').toString().toLowerCase().includes(search) ||
         (r.ili_description || '').toString().toLowerCase().includes(search) ||
         (r.qli_description || '').toString().toLowerCase().includes(search) ||
+        (r.ili_invoice_start_date || '').toString().toLowerCase().includes(search) ||
+        (r.qli_invoice_start_date || '').toString().toLowerCase().includes(search) ||
+        (r.ili_renewal_term || '').toString().toLowerCase().includes(search) ||
+        (r.qli_renewal_term || '').toString().toLowerCase().includes(search) ||
+        (r.rc_u_rate_card_sub_type || '').toString().toLowerCase().includes(search) ||
+        (r.rc_u_country || '').toString().toLowerCase().includes(search) ||
+        (r.rc_u_region || '').toString().toLowerCase().includes(search) ||
         (r.remarks || '').toLowerCase().includes(search)
       )
     }
@@ -122,6 +129,25 @@ function ValidationResults({ results }) {
                 <th>QLI Unit Price</th>
                 <th>ILI Description</th>
                 <th>QLI Description</th>
+                <th>ILI Invoice Start Date</th>
+                <th>QLI Invoice Start Date</th>
+                <th>ILI Renewal Term</th>
+                <th>QLI Renewal Term</th>
+                <th>ILI First Price Inc After</th>
+                <th>QLI First Price Inc After</th>
+                <th>ILI Price Inc %</th>
+                <th>QLI Price Inc %</th>
+                <th>RC Sub Type</th>
+                <th>RC Effective From</th>
+                <th>RC Effective Till</th>
+                <th>RC Country</th>
+                <th>RC Region</th>
+                <th>RC Unit Price Used</th>
+                <th>RC u_pricekva</th>
+                <th>RC u_rate</th>
+                <th>RC u_nrc</th>
+                <th>RC Cabinet Density</th>
+                <th>RC ICB Flag</th>
                 <th>Status</th>
                 <th>Remarks</th>
               </tr>
@@ -140,6 +166,25 @@ function ValidationResults({ results }) {
                   <td className="price-cell">{result.qli_unit_price !== undefined && result.qli_unit_price !== '' && !isNaN(Number(result.qli_unit_price)) ? `$${Number(result.qli_unit_price).toFixed(2)}` : '-'}</td>
                   <td className="desc-cell">{result.ili_description ?? '-'}</td>
                   <td className="desc-cell">{result.qli_description ?? '-'}</td>
+                  <td>{result.ili_invoice_start_date ?? '-'}</td>
+                  <td>{result.qli_invoice_start_date ?? '-'}</td>
+                  <td>{result.ili_renewal_term ?? '-'}</td>
+                  <td>{result.qli_renewal_term ?? '-'}</td>
+                  <td>{result.ili_first_Price_increment_applicable_after ?? '-'}</td>
+                  <td>{result.qli_first_Price_increment_applicable_after ?? '-'}</td>
+                  <td>{result.ili_price_increase_percentage ?? '-'}</td>
+                  <td>{result.qli_price_increase_percentage ?? '-'}</td>
+                  <td>{result.rc_u_rate_card_sub_type ?? '-'}</td>
+                  <td>{result.rc_u_effective_from ?? '-'}</td>
+                  <td>{result.rc_effective_till ?? '-'}</td>
+                  <td>{result.rc_u_country ?? '-'}</td>
+                  <td>{result.rc_u_region ?? '-'}</td>
+                  <td className="price-cell">{result.rc_unit_price_used !== undefined && result.rc_unit_price_used !== '' && !isNaN(Number(result.rc_unit_price_used)) ? `$${Number(result.rc_unit_price_used).toFixed(2)}` : '-'}</td>
+                  <td className="price-cell">{result.rc_u_pricekva !== undefined && result.rc_u_pricekva !== '' && !isNaN(Number(result.rc_u_pricekva)) ? `$${Number(result.rc_u_pricekva).toFixed(2)}` : '-'}</td>
+                  <td className="price-cell">{result.rc_u_rate !== undefined && result.rc_u_rate !== '' && !isNaN(Number(result.rc_u_rate)) ? `$${Number(result.rc_u_rate).toFixed(2)}` : '-'}</td>
+                  <td className="price-cell">{result.rc_u_nrc !== undefined && result.rc_u_nrc !== '' && !isNaN(Number(result.rc_u_nrc)) ? `$${Number(result.rc_u_nrc).toFixed(2)}` : '-'}</td>
+                  <td>{result.rc_u_minimum_cabinet_density ?? '-'}</td>
+                  <td>{result.rc_u_icb_flag ?? '-'}</td>
                   <td>
                     <span className={`status-badge ${result.validation_result.toLowerCase().replace(/\s+/g, '-')}`}>
                       {result.validation_result}

@@ -21,11 +21,17 @@ const QLI_CHARGE_DESC_VARIANTS = ['Item Description', 'Item_Description', 'Charg
 const QLI_CHANGE_DESC_VARIANTS = ['Changed Item Description', 'Changed_Item_Description', 'Change Description', 'CHANGE_DESCRIPTION']
 const QLI_QTY_VARIANTS = ['Quantity', 'quantity', 'QUANTITY']
 const QLI_UNIT_PRICE_VARIANTS = ['Unit Price', 'Unit_Price', 'OTC', 'otc', 'Total OTC', 'MRC', 'mrc', 'Total MRC']
-const QLI_SERVICE_START_VARIANTS = ['service_start_date', 'Service_Start_Date', 'SERVICE_START_DATE']
+// Invoice start date (used for CUP date logic; quote column may be named "Invoice start date" or service_start_date)
+const QLI_SERVICE_START_VARIANTS = ['Invoice start date', 'invoice_start_date', 'service_start_date', 'Service_Start_Date', 'SERVICE_START_DATE']
 const QLI_INITIAL_TERM_VARIANTS = ['initial_term', 'Initial_Term', 'INITIAL_TERM', 'renewal_term']
-const QLI_TERM_VARIANTS = ['term', 'Term', 'TERM', 'renewal_term', 'RENEWAL_TERM']
+const QLI_TERM_VARIANTS = ['renewal term', 'term', 'Term', 'TERM', 'renewal_term', 'RENEWAL_TERM']
 const QLI_INITIAL_TERM_INC_VARIANTS = ['first_Price_increment_applicable_after', 'Initial_term_Increment', 'initial_term_increment', 'Initial_Term_Increment', 'FIRST_PRICE_INC_APP_AFTER']
 const QLI_INCREMENT_VARIANTS = ['price_increase_percentage', 'Increment', 'increment', 'PRICE_INCREASE_PERCENTAGE']
+
+const ILI_INVOICE_START_VARIANTS = ['invoice_start_date', 'BILLING_FROM', 'INVOICE_START_DATE', 'SERVICE_START_DATE']
+const ILI_RENEWAL_TERM_VARIANTS = ['renewal term', 'renewal_term', 'RENEWAL_TERM', 'term', 'Term']
+const ILI_FIRST_PRICE_INC_VARIANTS = ['first_Price_increment_applicable_after', 'FIRST_PRICE_INC_APP_AFTER']
+const ILI_PRICE_INCREASE_PCT_VARIANTS = ['price_increase_percentage', 'PRICE_INCREASE_PERCENTAGE']
 const QLI_CONTRACT_MONTHS_VARIANTS = ['contract_period_in_months', 'Contract_Period_In_Months', 'CONTRACT_PERIOD_IN_MONTHS']
 
 function getValue(row, variants) {
@@ -357,6 +363,10 @@ export function runValidation(baseData, quoteData, options = {}) {
       quantity: getILIQuantity(ili),
       lla: getILILLA(ili),
       ili_description: getILIDescription(ili),
+      ili_invoice_start_date: getValue(ili, ILI_INVOICE_START_VARIANTS),
+      ili_renewal_term: getValue(ili, ILI_RENEWAL_TERM_VARIANTS),
+      ili_first_Price_increment_applicable_after: getValue(ili, ILI_FIRST_PRICE_INC_VARIANTS),
+      ili_price_increase_percentage: getValue(ili, ILI_PRICE_INCREASE_PCT_VARIANTS),
       validation_result: '',
       remarks: ''
     }
@@ -377,6 +387,10 @@ export function runValidation(baseData, quoteData, options = {}) {
       baseResult.qli_quantity = getQLIQuantity(matchedQLI)
       baseResult.qli_unit_price = getNumeric(matchedQLI, QLI_UNIT_PRICE_VARIANTS)
       baseResult.qli_description = getQLIChargeDesc(matchedQLI)
+      baseResult.qli_invoice_start_date = getValue(matchedQLI, QLI_SERVICE_START_VARIANTS)
+      baseResult.qli_renewal_term = getValue(matchedQLI, QLI_TERM_VARIANTS)
+      baseResult.qli_first_Price_increment_applicable_after = getValue(matchedQLI, QLI_INITIAL_TERM_INC_VARIANTS)
+      baseResult.qli_price_increase_percentage = getValue(matchedQLI, QLI_INCREMENT_VARIANTS)
     }
 
     if (result === 'validated') {
@@ -413,6 +427,19 @@ export function runValidation(baseData, quoteData, options = {}) {
         rateCardCount--
         failedCount++
       }
+      if (rcResult.rc_u_rate_card_sub_type !== undefined) results[i].rc_u_rate_card_sub_type = rcResult.rc_u_rate_card_sub_type
+      if (rcResult.rc_u_rate_card_type !== undefined) results[i].rc_u_rate_card_type = rcResult.rc_u_rate_card_type
+      if (rcResult.rc_u_rate_card !== undefined) results[i].rc_u_rate_card = rcResult.rc_u_rate_card
+      if (rcResult.rc_u_effective_from !== undefined) results[i].rc_u_effective_from = rcResult.rc_u_effective_from
+      if (rcResult.rc_effective_till !== undefined) results[i].rc_effective_till = rcResult.rc_effective_till
+      if (rcResult.rc_u_country !== undefined) results[i].rc_u_country = rcResult.rc_u_country
+      if (rcResult.rc_u_region !== undefined) results[i].rc_u_region = rcResult.rc_u_region
+      if (rcResult.rc_unit_price_used !== undefined && rcResult.rc_unit_price_used !== '') results[i].rc_unit_price_used = rcResult.rc_unit_price_used
+      if (rcResult.rc_u_pricekva !== undefined && rcResult.rc_u_pricekva !== '') results[i].rc_u_pricekva = rcResult.rc_u_pricekva
+      if (rcResult.rc_u_rate !== undefined && rcResult.rc_u_rate !== '') results[i].rc_u_rate = rcResult.rc_u_rate
+      if (rcResult.rc_u_nrc !== undefined && rcResult.rc_u_nrc !== '') results[i].rc_u_nrc = rcResult.rc_u_nrc
+      if (rcResult.rc_u_minimum_cabinet_density !== undefined) results[i].rc_u_minimum_cabinet_density = rcResult.rc_u_minimum_cabinet_density
+      if (rcResult.rc_u_icb_flag !== undefined) results[i].rc_u_icb_flag = rcResult.rc_u_icb_flag
       // skipped: remains "For Rate Card Validation"
     }
   }
