@@ -1,0 +1,67 @@
+[
+  {
+    "space_and_power": [
+      {"key": "Power Cord", "subkey": ["kVA"], "fields": ["u_minimum_cabinet_density"]},
+      {"key": "AC Power", "subkey": ["kVA"], "fields": ["u_minimum_cabinet_density"]},
+      {"key": "Draw Cap Overage Charge", "subkey": ["kVA"], "fields": ["u_minimum_cabinet_density"]},
+      {"key": "Private Cage With Metered Power", "subkey": ["kVA"], "fields": ["u_minimum_cabinet_density"]},
+      {"key": "Metered Power Charges", "subkey": ["kVA"], "fields": ["u_minimum_cabinet_density"]},
+      {"key": "AC Cord (Power Cord)", "subkey": ["kVA"], "fields": ["u_minimum_cabinet_density"]}
+    ]
+  },
+  {
+    "power_install_nrc": [
+      {"key": "AC Circuit", "subkey": [], "fields": ["u_amps", "u_volt"]},
+      {"key": "DC Circuit", "subkey": [], "fields": ["u_amps", "u_volt"]}
+    ]
+  },
+  {
+    "secure_cabinet_express": [
+      {"key": "Private Cage With Circuit", "subkey": ["kVA"], "fields": ["u_minimum_cabinet_density"]},
+      {"key": "Secure Cabinet", "subkey": ["kVA"], "fields": ["u_minimum_cabinet_density"]},
+      {"key": "Configurable Accessories", "subkey": ["kVA"], "fields": ["u_minimum_cabinet_density"]},
+      {"key": "Drawer with Key to Cage", "subkey": ["kVA"], "fields": ["u_minimum_cabinet_density"]},
+      {"key": "IBXflex - Custom Storage", "subkey": ["kVA"], "fields": ["u_minimum_cabinet_density"]},
+      {"key": "Business Suite", "subkey": ["kVA"], "fields": ["u_minimum_cabinet_density"]},
+      {"key": "Private Cage", "subkey": ["kVA"], "fields": ["u_minimum_cabinet_density"]},
+      {"key": "Antenna Space", "subkey": ["kVA"], "fields": ["u_minimum_cabinet_density"]},
+      {"key": "Mounting Bracket", "subkey": ["kVA"], "fields": ["u_minimum_cabinet_density"]},
+      {"key": "Patch Cable", "subkey": ["kVA"], "fields": ["u_minimum_cabinet_density"]},
+      {"key": "Cable Manager", "subkey": ["kVA"], "fields": ["u_minimum_cabinet_density"]},
+      {"key": "Cabinet Installed", "subkey": ["kVA"], "fields": ["u_minimum_cabinet_density"]}
+    ]
+  },
+  {
+    "cabinet_install_nrc": [
+      {"key": "Cabinet Installation", "subkey": [], "fields": []},
+      {"key": "Cage Installation", "subkey": [], "fields": []},
+      {"key": "Cabinet Expedite", "subkey": [], "fields": []},
+      {"key": "Cage Expedite", "subkey": [], "fields": []},
+      {"key": "Cabinet De-Install", "subkey": [], "fields": []}
+    ]
+  },
+  {
+    "interconnection": [
+      {"key": "Extended Cross Connect", "subkey": ["Single-Mode Fiber", "Multi-Mode Fiber"], "fields": []},
+      {"key": "Cross Connect", "subkey": ["Single-Mode Fiber", "Multi-Mode Fiber", "UTP", "COAX", "POTS"], "fields": []},
+      {"key": "Extended Fiber Connect", "subkey": [], "fields": []},
+      {"key": "Fiber Connect", "subkey": [], "fields": []},
+      {"key": "Metro Connect", "subkey": ["Protected", "Unprotected", "Dual Diverse"], "fields": ["u_parameter1"]},
+      {"key": "Internet Exchange Port", "subkey": [], "fields": ["u_parameter1"]},
+      {"key": "Equinix Fabric Port", "subkey": [], "fields": ["u_parameter1"]},
+      {"key": "Equinix Fabric Unlimited Port Plus", "subkey": [], "fields": ["u_parameter1"]},
+      {"key": "Equinix Fabric Cloud Router", "subkey": [], "fields": ["u_parameter1"]},
+      {"key": "Equinix Internet Access", "subkey": [], "fields": ["u_goods_services_category", "u_parameter1"]}
+    ]
+  },
+  {
+    "smart_hands": [
+      {"key": "Smart Hands", "subkey": [], "fields": []}
+    ]
+  },
+  {
+    "equinix_precision_time": [
+      {"key": "Equinix Precision Time", "subkey": [], "fields": []}
+    ]
+  }
+]
