@@ -34,6 +34,7 @@ function ValidationResults({ results }) {
         (r.ili_renewal_term || '').toString().toLowerCase().includes(search) ||
         (r.qli_renewal_term || '').toString().toLowerCase().includes(search) ||
         (r.quotation_skip_reason || '').toString().toLowerCase().includes(search) ||
+        (r.rc_u_subkeys || '').toString().toLowerCase().includes(search) ||
         (r.rc_u_rate_card_sub_type || '').toString().toLowerCase().includes(search) ||
         (r.rc_u_country || '').toString().toLowerCase().includes(search) ||
         (r.rc_u_region || '').toString().toLowerCase().includes(search) ||
@@ -150,6 +151,7 @@ function ValidationResults({ results }) {
                 <th>LLA</th>
                 <th>ELLA</th>
                 <th>RC Sub Type</th>
+                <th>RC Subkey</th>
                 <th>RC Effective From</th>
                 <th>RC Effective Till</th>
                 <th>RC Country</th>
@@ -195,6 +197,7 @@ function ValidationResults({ results }) {
                   <td className="price-cell">{result.lla !== undefined && !isNaN(Number(result.lla)) ? `$${Number(result.lla).toFixed(2)}` : '-'}</td>
                   <td className="price-cell">{result.ella !== undefined && !isNaN(Number(result.ella)) ? `$${Number(result.ella).toFixed(2)}` : '-'}</td>
                   <td>{result.rc_u_rate_card_sub_type ?? '-'}</td>
+                  <td>{result.rc_u_subkeys ?? '-'}</td>
                   <td>{result.rc_u_effective_from ?? '-'}</td>
                   <td>{result.rc_effective_till ?? '-'}</td>
                   <td>{result.rc_u_country ?? '-'}</td>

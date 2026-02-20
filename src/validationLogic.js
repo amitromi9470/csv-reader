@@ -452,6 +452,7 @@ export function runValidation(baseData, quoteData, options = {}) {
       if (rcResult.rc_u_nrc !== undefined && rcResult.rc_u_nrc !== '') results[i].rc_u_nrc = rcResult.rc_u_nrc
       if (rcResult.rc_u_minimum_cabinet_density !== undefined) results[i].rc_u_minimum_cabinet_density = rcResult.rc_u_minimum_cabinet_density
       if (rcResult.rc_u_icb_flag !== undefined) results[i].rc_u_icb_flag = rcResult.rc_u_icb_flag
+      if (rcResult.rc_u_subkeys !== undefined) results[i].rc_u_subkeys = rcResult.rc_u_subkeys
       // skipped: remains "For Rate Card Validation"
     }
   }

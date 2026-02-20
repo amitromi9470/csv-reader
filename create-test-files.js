@@ -252,7 +252,7 @@ const rcTypes = [
   { sub_type: 'Smart Hands', price_field: 'u_rate', price: 150 },
   { sub_type: 'Equinix Precision Time', price_field: 'u_std_ntp_non_red', price: 50, std_ptp: 60, ent_ntp: 80, ent_ptp: 90 }
 ]
-const rateCardCols = ['u_rate_card_type', 'u_rate_card', 'u_rate_card_sub_type', 'u_country', 'u_region', 'u_effective_from', 'effective_till', 'u_icb_flag', 'u_all_ibx', 'u_ibxs', 'u_excluded_ibxs', 'u_pricekva', 'u_minimum_cabinet_density', 'u_rate', 'u_amps', 'u_volt', 'u_nrc', 'u_std_ntp_non_red', 'u_std_ptp_non_red', 'u_ent_ntp_non_red', 'u_ent_ptp_non_red', 'IBX']
+const rateCardCols = ['u_rate_card_type', 'u_rate_card', 'u_rate_card_sub_type', 'u_subkeys', 'u_country', 'u_region', 'u_effective_from', 'effective_till', 'u_icb_flag', 'u_all_ibx', 'u_ibxs', 'u_excluded_ibxs', 'u_pricekva', 'u_minimum_cabinet_density', 'u_rate', 'u_amps', 'u_volt', 'u_nrc', 'u_std_ntp_non_red', 'u_std_ptp_non_red', 'u_ent_ntp_non_red', 'u_ent_ptp_non_red', 'IBX']
 function rcRow(overrides = {}) {
   const row = {}
   rateCardCols.forEach(c => { row[c] = '' })
@@ -281,6 +281,7 @@ for (let i = 0; i < 55; i++) {
   if (rc.price_field === 'u_pricekva') {
     row.u_pricekva = rc.price
     row.u_minimum_cabinet_density = rc.density || 'Standard'
+    row.u_subkeys = rc.sub_type === 'Space & Power' || rc.sub_type === 'Secure Cabinet Express' ? 'kVA' : ''
   } else if (rc.price_field === 'u_rate') {
     row.u_rate = rc.price
   } else {
@@ -296,6 +297,7 @@ for (let i = 0; i < 55; i++) {
     row.u_ent_ntp_non_red = rc.ent_ntp || 80
     row.u_ent_ptp_non_red = rc.ent_ptp || 90
   }
+  if (rc.sub_type === 'Interconnection') row.u_subkeys = row.u_subkeys || 'Single-Mode Fiber,Multi-Mode Fiber,UTP,COAX,POTS'
   rcRows.push(row)
 }
 
@@ -304,6 +306,7 @@ rcRows.push(rcRow({
   u_rate_card_type: 'Equinix',
   u_rate_card: 'Power',
   u_rate_card_sub_type: 'Space & Power',
+  u_subkeys: 'kVA',
   u_country: 'United States',
   u_region: 'Americas',
   u_effective_from: '2025-04-01',

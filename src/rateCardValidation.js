@@ -29,6 +29,7 @@ const RC_PRICE_KVA_VARIANTS = ['u_pricekva', 'pricekva', 'Price per kVA']
 const RC_RATE_VARIANTS = ['u_rate', 'rate', 'Rate']
 const RC_NRC_VARIANTS = ['u_nrc', 'nrc', 'NRC']
 const RC_ICB_FLAG_VARIANTS = ['u_icb_flag', 'icb_flag', 'ICB Flag']
+const RC_U_SUBKEYS_VARIANTS = ['u_subkeys', 'Subkey', 'subkeys', 'subkey', 'U_SUBKEYS']
 const RC_STD_NTP_VARIANTS = ['u_std_ntp_non_red', 'std_ntp_non_red']
 const RC_STD_PTP_VARIANTS = ['u_std_ptp_non_red', 'std_ptp_non_red']
 const RC_ENT_NTP_VARIANTS = ['u_ent_ntp_non_red', 'ent_ntp_non_red']
@@ -188,9 +189,9 @@ function getCategoryEntries(configArray, categoryKey) {
 function getRcValue(rcRow, fieldName) {
   const v = rcRow[fieldName]
   if (v !== undefined && v !== null && v !== '') return String(v).trim()
-  const lower = fieldName.toLowerCase()
+  const lower = fieldName.toLowerCase().trim()
   for (const k of Object.keys(rcRow || {})) {
-    if (k.toLowerCase() === lower) return String(rcRow[k]).trim()
+    if (String(k).trim().toLowerCase() === lower) return String(rcRow[k]).trim()
   }
   return ''
 }
@@ -238,9 +239,16 @@ function findRateCard(ili, rateCardData, configArray) {
     if (!meta) continue
     const subType = meta.subType
 
+    const matchedSubkey = match.subkey
     const candidates = (rateCardData || []).filter(rc => {
       const rcSub = getRcValue(rc, 'u_rate_card_sub_type') || getRcValue(rc, 'rate_card_sub_type')
       if (rcSub !== subType) return false
+      const rcSubkeys = getValue(rc, RC_U_SUBKEYS_VARIANTS)
+      if (rcSubkeys && matchedSubkey) {
+        const subkeyList = rcSubkeys.split(',').map(s => s.trim().toLowerCase())
+        const matchedLower = String(matchedSubkey).trim().toLowerCase()
+        if (!subkeyList.includes(matchedLower)) return false
+      }
       const rcCountry = getRcValue(rc, 'u_country') || getRcValue(rc, 'country')
       if (country && rcCountry && rcCountry !== country) return false
       const rcRegion = getRcValue(rc, 'u_region') || getRcValue(rc, 'region')
@@ -258,7 +266,7 @@ function findRateCard(ili, rateCardData, configArray) {
       const rc = candidates[c]
       if (getRcValue(rc, 'u_icb_flag') === 'true' || rc.u_icb_flag === true) continue
       if (!checkExactRateCardEntry(rc, chargeDesc, fieldArr)) continue
-      return { rc, subType, match: { keyObj: match.keyObj } }
+      return { rc, subType, matchedSubkey: matchedSubkey || null, match: { keyObj: match.keyObj } }
     }
   }
   return null
@@ -353,6 +361,7 @@ export function validateWithRateCard(ili, rateCardData, configArray, options = {
     rc_u_rate_card_type: getRcValue(rc, 'u_rate_card_type'),
     rc_u_rate_card: getRcValue(rc, 'u_rate_card'),
     rc_u_rate_card_sub_type: subType || getRcValue(rc, 'u_rate_card_sub_type'),
+    rc_u_subkeys: getValue(rc, RC_U_SUBKEYS_VARIANTS),
     rc_u_effective_from: getRcValue(rc, 'u_effective_from'),
     rc_effective_till: getRcValue(rc, 'effective_till'),
     rc_u_country: getRcValue(rc, 'u_country'),
