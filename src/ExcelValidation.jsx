@@ -27,6 +27,8 @@ function ValidationResults({ results }) {
         (r.qli_description || '').toString().toLowerCase().includes(search) ||
         (r.ili_invoice_start_date || '').toString().toLowerCase().includes(search) ||
         (r.qli_invoice_start_date || '').toString().toLowerCase().includes(search) ||
+        (r.billing_from || '').toString().toLowerCase().includes(search) ||
+        (r.billing_till || '').toString().toLowerCase().includes(search) ||
         (r.ili_renewal_term || '').toString().toLowerCase().includes(search) ||
         (r.qli_renewal_term || '').toString().toLowerCase().includes(search) ||
         (r.rc_u_rate_card_sub_type || '').toString().toLowerCase().includes(search) ||
@@ -137,6 +139,9 @@ function ValidationResults({ results }) {
                 <th>QLI First Price Inc After</th>
                 <th>ILI Price Inc %</th>
                 <th>QLI Price Inc %</th>
+                <th>Billing From</th>
+                <th>Billing Till</th>
+                <th>PF</th>
                 <th>RC Sub Type</th>
                 <th>RC Effective From</th>
                 <th>RC Effective Till</th>
@@ -174,6 +179,9 @@ function ValidationResults({ results }) {
                   <td>{result.qli_first_Price_increment_applicable_after ?? '-'}</td>
                   <td>{result.ili_price_increase_percentage ?? '-'}</td>
                   <td>{result.qli_price_increase_percentage ?? '-'}</td>
+                  <td>{result.billing_from ?? '-'}</td>
+                  <td>{result.billing_till ?? '-'}</td>
+                  <td className="price-cell">{result.pf !== undefined && !isNaN(Number(result.pf)) ? Number(result.pf).toFixed(4) : '-'}</td>
                   <td>{result.rc_u_rate_card_sub_type ?? '-'}</td>
                   <td>{result.rc_u_effective_from ?? '-'}</td>
                   <td>{result.rc_effective_till ?? '-'}</td>

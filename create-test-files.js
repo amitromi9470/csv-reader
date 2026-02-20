@@ -12,7 +12,7 @@ const baseCols = [
   'invoice_number', 'invoice_date', 'quantity', 'unit_price', 'line_level_amount',
   'po_number', 'IBX', 'renewal term', 'first_Price_increment_applicable_after',
   'description', 'item_code', 'country', 'region', 'invoice_start_date',
-  'service_start_date', 'price_increase_percentage'
+  'service_start_date', 'price_increase_percentage', 'billing_from', 'billing_till'
 ]
 
 function baseRow(overrides = {}) {
@@ -34,6 +34,11 @@ for (let i = 1; i <= 20; i++) {
   const qty = i % 2 === 0 ? 5 + (i % 4) : 1
   const up = i % 2 === 0 ? 10 : 100
   const startDate = baseInvoiceStartDates[i % baseInvoiceStartDates.length]
+  const y = parseInt(startDate.slice(0, 4), 10)
+  const m = parseInt(startDate.slice(5, 7), 10)
+  const monthStart = startDate.slice(0, 8) + '01'
+  const lastDay = new Date(y, m, 0)
+  const monthEnd = lastDay.toISOString().slice(0, 10)
   baseRows.push(baseRow({
     invoice_number: `INV-${String(i).padStart(4, '0')}`,
     invoice_date: '2025-01-15',
@@ -49,6 +54,8 @@ for (let i = 1; i <= 20; i++) {
     price_increase_percentage: 2 + (i % 4),
     invoice_start_date: startDate,
     service_start_date: startDate,
+    billing_from: monthStart,
+    billing_till: monthEnd,
     country: 'United States',
     region: 'Americas'
   }))
@@ -70,6 +77,8 @@ for (let i = 21; i <= 32; i++) {
       line_level_amount: 50,
       invoice_start_date: '2025-01-01',
       service_start_date: '2025-01-01',
+      billing_from: '2025-01-01',
+      billing_till: '2025-01-31',
       country: 'United States',
       region: 'Americas'
     }))
@@ -86,6 +95,8 @@ for (let i = 21; i <= 32; i++) {
       line_level_amount: 495,
       invoice_start_date: '2025-01-01',
       service_start_date: '2025-01-01',
+      billing_from: '2025-01-01',
+      billing_till: '2025-01-31',
       country: 'United States',
       region: 'Americas'
     }))
@@ -102,6 +113,8 @@ for (let i = 21; i <= 32; i++) {
       line_level_amount: 10000,
       invoice_start_date: '2025-01-01',
       service_start_date: '2025-01-01',
+      billing_from: '2025-01-01',
+      billing_till: '2025-01-31',
       country: 'United States',
       region: 'Americas'
     }))
@@ -118,6 +131,8 @@ for (let i = 21; i <= 32; i++) {
       line_level_amount: 0,
       invoice_start_date: '2025-01-01',
       service_start_date: '2025-01-01',
+      billing_from: '2025-01-01',
+      billing_till: '2025-01-31',
       country: 'United States',
       region: 'Americas'
     }))
@@ -152,6 +167,8 @@ for (let i = 33; i <= 55; i++) {
     line_level_amount: up,
     invoice_start_date: svcStart,
     service_start_date: svcStart,
+    billing_from: isMissingServiceStart ? '' : '2025-06-01',
+    billing_till: isMissingServiceStart ? '' : '2025-06-30',
     country: 'United States',
     region: 'Americas'
   }))
@@ -169,6 +186,8 @@ baseRows.push(baseRow({
   line_level_amount: 500,
   invoice_start_date: '2025-06-01',
   service_start_date: '2025-06-01',
+  billing_from: '2025-06-01',
+  billing_till: '2025-06-30',
   country: 'United States',
   region: 'Americas'
 }))
