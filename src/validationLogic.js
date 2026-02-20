@@ -310,20 +310,20 @@ export function validateILIAgainstQLIs(ili, qlis, options) {
   const qtyILI = quantity
   const ella = cup * qtyILI * pf
   if (!isNaN(lla) && lla > ella * (1 + priceTolerance)) {
-    return { result: 'failed', remarks: `LLA ${lla.toFixed(2)} exceeds ELLA*(1+tolerance)=${(ella * (1 + priceTolerance)).toFixed(2)}`, matchedQLI: qli }
+    return { result: 'failed', remarks: `LLA ${lla.toFixed(2)} exceeds ELLA*(1+tolerance)=${(ella * (1 + priceTolerance)).toFixed(2)}`, matchedQLI: qli, ella }
   }
- 
+
   // 4) Quantity: ILI quantity vs QLI quantity with tolerance (no cumulative check)
   const qliQty = getQLIQuantity(qli)
   if (isNaN(qliQty) || qliQty <= 0) {
     return { result: null, remarks: '', matchedQLI: null }
   }
- 
+
   if (qtyILI > qliQty * (1 + qtyTolerance)) {
-    return { result: 'failed', remarks: `Quantity ${qtyILI} exceeds quote quantity ${qliQty} * (1+${(qtyTolerance * 100).toFixed(0)}%)`, matchedQLI: qli }
+    return { result: 'failed', remarks: `Quantity ${qtyILI} exceeds quote quantity ${qliQty} * (1+${(qtyTolerance * 100).toFixed(0)}%)`, matchedQLI: qli, ella }
   }
- 
-  return { result: 'validated', remarks: 'All validations passed.', matchedQLI: qli }
+
+  return { result: 'validated', remarks: 'All validations passed.', matchedQLI: qli, ella }
 }
  
 /**
@@ -379,8 +379,9 @@ export function runValidation(baseData, quoteData, options = {}) {
       continue
     }
  
-    const { result, remarks, matchedQLI } = validateILIAgainstQLIs(ili, qlis, options)
+    const { result, remarks, matchedQLI, ella } = validateILIAgainstQLIs(ili, qlis, options)
     baseResult.remarks = remarks
+    if (ella !== undefined && ella !== '' && !isNaN(Number(ella))) baseResult.ella = ella
     if (matchedQLI) {
       baseResult.qli_po_number = getQLIPO(matchedQLI)
       baseResult.qli_site_id = getQLISiteId(matchedQLI)

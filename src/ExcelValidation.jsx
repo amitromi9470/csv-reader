@@ -142,6 +142,8 @@ function ValidationResults({ results }) {
                 <th>Billing From</th>
                 <th>Billing Till</th>
                 <th>PF</th>
+                <th>LLA</th>
+                <th>ELLA</th>
                 <th>RC Sub Type</th>
                 <th>RC Effective From</th>
                 <th>RC Effective Till</th>
@@ -182,6 +184,8 @@ function ValidationResults({ results }) {
                   <td>{result.billing_from ?? '-'}</td>
                   <td>{result.billing_till ?? '-'}</td>
                   <td className="price-cell">{result.pf !== undefined && !isNaN(Number(result.pf)) ? Number(result.pf).toFixed(4) : '-'}</td>
+                  <td className="price-cell">{result.lla !== undefined && !isNaN(Number(result.lla)) ? `$${Number(result.lla).toFixed(2)}` : '-'}</td>
+                  <td className="price-cell">{result.ella !== undefined && !isNaN(Number(result.ella)) ? `$${Number(result.ella).toFixed(2)}` : '-'}</td>
                   <td>{result.rc_u_rate_card_sub_type ?? '-'}</td>
                   <td>{result.rc_u_effective_from ?? '-'}</td>
                   <td>{result.rc_effective_till ?? '-'}</td>
