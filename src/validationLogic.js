@@ -287,19 +287,21 @@ export function validateILIAgainstQLIs(ili, qlis, options) {
     candidates.push({ qli, matchCount })
   }
  
-  if (candidates.length === 0) return { result: null, remarks: '', matchedQLI: null }
- 
+  if (candidates.length === 0) {
+    return { result: null, remarks: 'Quotation validation skipped: No QLI matched (IBX, product code, or description mismatch).', matchedQLI: null }
+  }
+
   // Whichever QLI has max description match count is taken for further validation
   let best = candidates[0]
   for (let i = 1; i < candidates.length; i++) {
     if (candidates[i].matchCount > best.matchCount) best = candidates[i]
   }
   const qli = best.qli
- 
+
   // 3) Unit Price and LLA (only on selected QLI)
   const cup = getCUP(ili, qli, today)
   if (isNaN(cup) || cup <= 0) {
-    return { result: null, remarks: '', matchedQLI: null }
+    return { result: null, remarks: 'Quotation validation skipped: Quote unit price (CUP) not found or invalid for matched QLI.', matchedQLI: null }
   }
  
   const pf = getPF(ili)
@@ -316,7 +318,7 @@ export function validateILIAgainstQLIs(ili, qlis, options) {
   // 4) Quantity: ILI quantity vs QLI quantity with tolerance (no cumulative check)
   const qliQty = getQLIQuantity(qli)
   if (isNaN(qliQty) || qliQty <= 0) {
-    return { result: null, remarks: '', matchedQLI: null }
+    return { result: null, remarks: 'Quotation validation skipped: Quote quantity not found or invalid for matched QLI.', matchedQLI: null }
   }
 
   if (qtyILI > qliQty * (1 + qtyTolerance)) {
@@ -360,6 +362,7 @@ export function runValidation(baseData, quoteData, options = {}) {
       quantity: getILIQuantity(ili),
       lla: getILILLA(ili),
       ili_description: getILIDescription(ili),
+      ili_item_code: getILIItemCode(ili),
       ili_invoice_start_date: getValue(ili, ILI_INVOICE_START_VARIANTS),
       ili_renewal_term: getValue(ili, ILI_RENEWAL_TERM_VARIANTS),
       ili_first_Price_increment_applicable_after: getValue(ili, ILI_FIRST_PRICE_INC_VARIANTS),
@@ -373,14 +376,18 @@ export function runValidation(baseData, quoteData, options = {}) {
  
     if (qlis.length === 0) {
       baseResult.validation_result = 'For Rate Card Validation'
-      baseResult.remarks = 'No matching quote line items for this PO number.'
+      baseResult.quotation_skip_reason = 'Quotation validation skipped: No quote line items for this PO number.'
+      baseResult.remarks = 'No quote line items for this PO number.'
       rateCardCount++
       results.push(baseResult)
       continue
     }
- 
+
     const { result, remarks, matchedQLI, ella } = validateILIAgainstQLIs(ili, qlis, options)
     baseResult.remarks = remarks
+    if (result !== 'validated' && result !== 'failed' && remarks) {
+      baseResult.quotation_skip_reason = remarks
+    }
     if (ella !== undefined && ella !== '' && !isNaN(Number(ella))) baseResult.ella = ella
     if (matchedQLI) {
       baseResult.qli_po_number = getQLIPO(matchedQLI)
@@ -388,6 +395,7 @@ export function runValidation(baseData, quoteData, options = {}) {
       baseResult.qli_quantity = getQLIQuantity(matchedQLI)
       baseResult.qli_unit_price = getNumeric(matchedQLI, QLI_UNIT_PRICE_VARIANTS)
       baseResult.qli_description = getQLIChargeDesc(matchedQLI)
+      baseResult.qli_item_code = getQLIProductCode(matchedQLI)
       baseResult.qli_invoice_start_date = getValue(matchedQLI, QLI_SERVICE_START_VARIANTS)
       baseResult.qli_renewal_term = getValue(matchedQLI, QLI_TERM_VARIANTS)
       baseResult.qli_first_Price_increment_applicable_after = getValue(matchedQLI, QLI_INITIAL_TERM_INC_VARIANTS)
@@ -402,7 +410,10 @@ export function runValidation(baseData, quoteData, options = {}) {
       failedCount++
     } else {
       baseResult.validation_result = 'For Rate Card Validation'
-      baseResult.remarks = baseResult.remarks || 'No QLI matched (IBX/product/charge/price/quantity).'
+      if (!baseResult.quotation_skip_reason) {
+        baseResult.quotation_skip_reason = baseResult.remarks || 'Quotation validation skipped: No QLI matched (IBX, product, charge, price, or quantity).'
+      }
+      baseResult.remarks = baseResult.remarks || 'No QLI matched (IBX, product, charge, price, or quantity).'
       rateCardCount++
     }
     results.push(baseResult)

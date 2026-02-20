@@ -112,30 +112,77 @@ function rateCardAppliesToIbx(rcRow, iliIbx) {
 }
 
 /**
- * Check which rate card type matches ILI by charge_description key/subkey.
- * Returns { type, subType, keyObj } or null. subType is e.g. 'Space & Power'.
+ * Fixed order for evaluating rate card categories (first match wins).
+ * Must match order in rate-card-types.json.
  */
-function checkRateCardType(ili, configArray, subTypeName) {
-  const chargeDesc = getIliChargeDesc(ili).toLowerCase()
-  if (!chargeDesc) return null
+const CATEGORY_ORDER = [
+  'space_and_power',
+  'power_install_nrc',
+  'secure_cabinet_express',
+  'cabinet_install_nrc',
+  'interconnection',
+  'smart_hands',
+  'equinix_precision_time'
+]
 
-  for (let i = 0; i < configArray.length; i++) {
-    const item = configArray[i]
-    const keyLower = (item.key || '').toLowerCase()
-    if (chargeDesc.indexOf(keyLower) === -1) continue
+/**
+ * Maps category key to subType / rcType / rc for rate card row filtering.
+ * JSON does not contain these; they are fixed per category.
+ */
+const CATEGORY_META = {
+  space_and_power: { subType: 'Space & Power', rcType: 'Power', rc: 'Power' },
+  power_install_nrc: { subType: 'Power Install NRC', rcType: 'Power', rc: 'Power' },
+  secure_cabinet_express: { subType: 'Secure Cabinet Express', rcType: 'Space', rc: 'Space' },
+  cabinet_install_nrc: { subType: 'Cabinet Install NRC', rcType: 'Space', rc: 'Space' },
+  interconnection: { subType: 'Interconnection', rcType: 'Interconnection', rc: 'Interconnection' },
+  smart_hands: { subType: 'Smart Hands', rcType: 'Service', rc: 'Service' },
+  equinix_precision_time: { subType: 'Equinix Precision Time', rcType: 'Service', rc: 'Service' }
+}
 
-    if (!item.subkey || item.subkey.length === 0) {
-      return { type: subTypeName, keyObj: item, key: item.key }
+/**
+ * Match charge_description against one category's entries from rate-card-types.json.
+ * Case-insensitive substring match. No regex, no tokenizing.
+ * - Key matched AND (no subkey or subkey matched) → return full match { keyObj, key, subkey?, fields }.
+ * - Key matched BUT subkey defined and NOT matched → return { ambiguous: true } (do not validate).
+ * - No key matched → return null.
+ * First matching entry wins.
+ */
+function matchChargeDescriptionToCategory(chargeDesc, entries) {
+  if (!chargeDesc || !entries || !Array.isArray(entries)) return null
+  const descLower = String(chargeDesc).toLowerCase()
+  for (let i = 0; i < entries.length; i++) {
+    const item = entries[i]
+    const key = (item.key || '').trim()
+    if (!key) continue
+    const keyLower = key.toLowerCase()
+    if (descLower.indexOf(keyLower) === -1) continue
+    const subkeyArr = item.subkey && Array.isArray(item.subkey) ? item.subkey : []
+    if (subkeyArr.length === 0) {
+      return { keyObj: item, key: item.key, fields: item.fields || [] }
     }
-    for (let j = 0; j < item.subkey.length; j++) {
-      const subLower = (item.subkey[j] || '').toLowerCase()
-      if (chargeDesc.indexOf(subLower) > -1) {
-        return { type: subTypeName, keyObj: item, key: item.key, subkey: item.subkey[j] }
+    let subkeyMatched = false
+    let matchedSubkey = null
+    for (let j = 0; j < subkeyArr.length; j++) {
+      const sk = (subkeyArr[j] || '').trim().toLowerCase()
+      if (sk && descLower.indexOf(sk) !== -1) {
+        subkeyMatched = true
+        matchedSubkey = subkeyArr[j]
+        break
       }
     }
-    return { type: subTypeName, keyObj: item, key: item.key, noSubkeyMatch: true }
+    if (!subkeyMatched) return { ambiguous: true }
+    return { keyObj: item, key: item.key, subkey: matchedSubkey, fields: item.fields || [] }
   }
   return null
+}
+
+/**
+ * Get entries array for a category from configArray (array of { [categoryKey]: entries }).
+ */
+function getCategoryEntries(configArray, categoryKey) {
+  if (!configArray || !Array.isArray(configArray)) return []
+  const obj = configArray.find(o => o[categoryKey] != null)
+  return obj && Array.isArray(obj[categoryKey]) ? obj[categoryKey] : []
 }
 
 function getRcValue(rcRow, fieldName) {
@@ -162,9 +209,10 @@ function checkExactRateCardEntry(rcRow, chargeDesc, fieldArr) {
 }
 
 /**
- * Filter rate card rows by type, country, region, effective dates.
- * configArray index: 0 space_and_power, 1 power_install_nrc, 2 secure_cabinet_express,
- * 3 cabinet_install_nrc, 4 interconnection, 5 smart_hands, 6 equinix_precision_time
+ * Find rate card by matching charge_description against rate-card-types.json (configArray).
+ * Categories evaluated in CATEGORY_ORDER (first match wins). Key + subkey match required when subkey defined;
+ * key-only with subkey defined → ambiguous, skip. Field-based validation: charge_description must contain
+ * each rate card field value when "fields" is defined.
  */
 function findRateCard(ili, rateCardData, configArray) {
   const serviceStart = getIliServiceStart(ili)
@@ -175,28 +223,22 @@ function findRateCard(ili, rateCardData, configArray) {
   const country = getIliCountry(ili)
   const region = getIliRegion(ili)
   const chargeDesc = getIliChargeDesc(ili)
+  const iliIbx = getIliIbx(ili)
 
-  const types = [
-    { name: 'Space & Power', key: 'space_and_power', rcType: 'Power', rc: 'Power', subType: 'Space & Power' },
-    { name: 'Power Install NRC', key: 'power_install_nrc', rcType: 'Power', rc: 'Power', subType: 'Power Install NRC' },
-    { name: 'Secure Cabinet Express', key: 'secure_cabinet_express', rcType: 'Space', rc: 'Space', subType: 'Secure Cabinet Express' },
-    { name: 'Cabinet Install NRC', key: 'cabinet_install_nrc', rcType: 'Space', rc: 'Space', subType: 'Cabinet Install NRC' },
-    { name: 'Interconnection', key: 'interconnection', rcType: 'Interconnection', rc: 'Interconnection', subType: 'Interconnection' },
-    { name: 'Smart Hands', key: 'smart_hands', rcType: 'Service', rc: 'Service', subType: 'Smart Hands' },
-    { name: 'Equinix Precision Time', key: 'equinix_precision_time', rcType: 'Service', rc: 'Service', subType: 'Equinix Precision Time' }
-  ]
+  for (let t = 0; t < CATEGORY_ORDER.length; t++) {
+    const categoryKey = CATEGORY_ORDER[t]
+    const entries = getCategoryEntries(configArray, categoryKey)
+    if (entries.length === 0) continue
 
-  for (let t = 0; t < types.length; t++) {
-    const config = configArray[t] && configArray[t][types[t].key]
-    if (!config) continue
-    const match = checkRateCardType(ili, config, types[t].name)
+    const match = matchChargeDescriptionToCategory(chargeDesc, entries)
     if (!match) continue
+    if (match.ambiguous) continue
 
-    if (match.noSubkeyMatch && (match.keyObj.subkey || []).length > 0) continue
+    const meta = CATEGORY_META[categoryKey]
+    if (!meta) continue
+    const subType = meta.subType
 
-    const subType = types[t].subType
-    const iliIbx = getIliIbx(ili)
-  const candidates = (rateCardData || []).filter(rc => {
+    const candidates = (rateCardData || []).filter(rc => {
       const rcSub = getRcValue(rc, 'u_rate_card_sub_type') || getRcValue(rc, 'rate_card_sub_type')
       if (rcSub !== subType) return false
       const rcCountry = getRcValue(rc, 'u_country') || getRcValue(rc, 'country')
@@ -211,12 +253,12 @@ function findRateCard(ili, rateCardData, configArray) {
       return true
     })
 
+    const fieldArr = match.fields || []
     for (let c = 0; c < candidates.length; c++) {
       const rc = candidates[c]
       if (getRcValue(rc, 'u_icb_flag') === 'true' || rc.u_icb_flag === true) continue
-      const fieldArr = (match.keyObj.fields || [])
       if (!checkExactRateCardEntry(rc, chargeDesc, fieldArr)) continue
-      return { rc, subType, match }
+      return { rc, subType, match: { keyObj: match.keyObj } }
     }
   }
   return null

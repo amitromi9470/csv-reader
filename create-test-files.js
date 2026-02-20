@@ -139,16 +139,22 @@ for (let i = 21; i <= 32; i++) {
   }
 }
 
-// 33-55: Rate card scenarios (no quote PO / OOS) - AC Power kVA, Smart Hands, Cabinet Installation, etc.
+// 33-55: Rate card scenarios – cover rate-card-types.json: key+subkey match, key-only (ambiguous), fields validation
 const rateCardDescriptions = [
-  'AC Power kVA',
-  'Metered Power Charges kVA',
-  'Power Cord kVA',
-  'Smart Hands NRC',
-  'Cabinet Installation',
+  'AC Power kVA Standard',                   // space_and_power: key+subkey; charge_desc contains "Standard" (u_minimum_cabinet_density)
+  'Metered Power Charges kVA Standard',
+  'Power Cord kVA Standard',
+  'AC Power Monthly Charge',                 // key "AC Power" matched but no "kVA" → ambiguous (skipped)
+  'Smart Hands NRC',                         // smart_hands: key only, no subkey
+  'Cabinet Installation',                    // cabinet_install_nrc: key only, no fields
   'Cage Installation',
-  'Cross Connect Single-Mode Fiber',
-  'Equinix Precision Time Standard NTP'
+  'Cross Connect Single-Mode Fiber',         // interconnection: key Cross Connect, subkey Single-Mode Fiber
+  'Equinix Precision Time Standard NTP',     // equinix_precision_time: key only
+  'Secure Cabinet kVA Standard',             // secure_cabinet_express: key + subkey kVA, field Standard
+  'AC Circuit 30A 208V',                     // power_install_nrc: key AC Circuit, fields u_amps u_volt (30, 208)
+  'Draw Cap Overage Charge kVA Standard',
+  'Extended Cross Connect Multi-Mode Fiber',
+  'DC Circuit 30 208'                        // power_install_nrc: key DC Circuit
 ]
 for (let i = 33; i <= 55; i++) {
   const desc = rateCardDescriptions[(i - 33) % rateCardDescriptions.length]

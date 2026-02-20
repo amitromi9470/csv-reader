@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx'
 import { runValidation as runValidationLogic } from './validationLogic'
 import './ExcelValidation.css'
 
-// Validation Results Component - Passed / Failed / For Rate Card Validation
+// Validation Results Component - Passed / Failed / Skipped
 function ValidationResults({ results }) {
   const [filterStatus, setFilterStatus] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
@@ -25,12 +25,15 @@ function ValidationResults({ results }) {
         (r.qli_site_id || '').toString().toLowerCase().includes(search) ||
         (r.ili_description || '').toString().toLowerCase().includes(search) ||
         (r.qli_description || '').toString().toLowerCase().includes(search) ||
+        (r.ili_item_code || '').toString().toLowerCase().includes(search) ||
+        (r.qli_item_code || '').toString().toLowerCase().includes(search) ||
         (r.ili_invoice_start_date || '').toString().toLowerCase().includes(search) ||
         (r.qli_invoice_start_date || '').toString().toLowerCase().includes(search) ||
         (r.billing_from || '').toString().toLowerCase().includes(search) ||
         (r.billing_till || '').toString().toLowerCase().includes(search) ||
         (r.ili_renewal_term || '').toString().toLowerCase().includes(search) ||
         (r.qli_renewal_term || '').toString().toLowerCase().includes(search) ||
+        (r.quotation_skip_reason || '').toString().toLowerCase().includes(search) ||
         (r.rc_u_rate_card_sub_type || '').toString().toLowerCase().includes(search) ||
         (r.rc_u_country || '').toString().toLowerCase().includes(search) ||
         (r.rc_u_region || '').toString().toLowerCase().includes(search) ||
@@ -75,7 +78,7 @@ function ValidationResults({ results }) {
         <div className="summary-card skipped">
           <div className="summary-icon">📋</div>
           <div className="summary-content">
-            <span className="summary-label">For Rate Card Validation</span>
+            <span className="summary-label">Skipped</span>
             <span className="summary-value">{results.rateCardCount}</span>
           </div>
         </div>
@@ -88,7 +91,7 @@ function ValidationResults({ results }) {
             <option value="all">All Results ({results.totalLines})</option>
             <option value="Passed">Passed ({results.passedCount})</option>
             <option value="Failed">Failed ({results.failedCount})</option>
-            <option value="For Rate Card Validation">For Rate Card Validation ({results.rateCardCount})</option>
+            <option value="For Rate Card Validation">Skipped ({results.rateCardCount})</option>
           </select>
         </div>
         <div className="search-group">
@@ -131,6 +134,8 @@ function ValidationResults({ results }) {
                 <th>QLI Unit Price</th>
                 <th>ILI Description</th>
                 <th>QLI Description</th>
+                <th>ILI Item Code</th>
+                <th>QLI Item Code</th>
                 <th>ILI Invoice Start Date</th>
                 <th>QLI Invoice Start Date</th>
                 <th>ILI Renewal Term</th>
@@ -156,6 +161,7 @@ function ValidationResults({ results }) {
                 <th>RC Cabinet Density</th>
                 <th>RC ICB Flag</th>
                 <th>Status</th>
+                <th>Skipped Quotation Reason</th>
                 <th>Remarks</th>
               </tr>
             </thead>
@@ -173,6 +179,8 @@ function ValidationResults({ results }) {
                   <td className="price-cell">{result.qli_unit_price !== undefined && result.qli_unit_price !== '' && !isNaN(Number(result.qli_unit_price)) ? `$${Number(result.qli_unit_price).toFixed(2)}` : '-'}</td>
                   <td className="desc-cell">{result.ili_description ?? '-'}</td>
                   <td className="desc-cell">{result.qli_description ?? '-'}</td>
+                  <td>{result.ili_item_code ?? '-'}</td>
+                  <td>{result.qli_item_code ?? '-'}</td>
                   <td>{result.ili_invoice_start_date ?? '-'}</td>
                   <td>{result.qli_invoice_start_date ?? '-'}</td>
                   <td>{result.ili_renewal_term ?? '-'}</td>
@@ -199,9 +207,10 @@ function ValidationResults({ results }) {
                   <td>{result.rc_u_icb_flag ?? '-'}</td>
                   <td>
                     <span className={`status-badge ${result.validation_result.toLowerCase().replace(/\s+/g, '-')}`}>
-                      {result.validation_result}
+                      {result.validation_result === 'For Rate Card Validation' ? 'Skipped' : result.validation_result}
                     </span>
                   </td>
+                  <td className="desc-cell">{result.quotation_skip_reason ?? '-'}</td>
                   <td className="remarks-cell">{result.remarks}</td>
                 </tr>
               ))}
@@ -355,8 +364,8 @@ function ExcelValidation() {
             <li><strong>Base File (Invoice):</strong> Book1-style with TRX_NUMBER, LINE_NUMBER, SERIAL_NUMBER, PO_NUMBER, IBX, ITEM_NUMBER/PRODUCT_CODE, DESCRIPTION, QUANTITY, UNIT_SELLING_PRICE, LINE_LEVEL_AMOUNT. Optional: BILLING_FROM, BILLING_TILL.</li>
             <li><strong>Quote File:</strong> Po Number, Site ID/IBX, Item Code, Item Description, Changed Item Description, Quantity, Unit Price (OTC/MRC). Optional: service_start_date, initial_term, term, Initial_term_Increment, Increment, contract_period_in_months.</li>
           </ul>
-          <p className="tip">Outcomes: <strong>Passed</strong> (all match), <strong>Failed</strong> (e.g. price/quantity anomaly), <strong>For Rate Card Validation</strong> (no QLIs or no matching QLI).</p>
-          <p className="tip">Optional <strong>Rate Card File</strong>: Upload to validate &quot;For Rate Card Validation&quot; lines against rate card (Space &amp; Power, Power Install NRC, Secure Cabinet Express, etc.). Uses same price tolerance. Config: <code>public/rate-card-types.json</code>.</p>
+          <p className="tip">Outcomes: <strong>Passed</strong> (all match), <strong>Failed</strong> (e.g. price/quantity anomaly), <strong>Skipped</strong> (no QLIs or no matching QLI; upload Rate Card to validate).</p>
+          <p className="tip">Optional <strong>Rate Card File</strong>: Upload to validate &quot;Skipped&quot; lines against rate card (Space &amp; Power, Power Install NRC, Secure Cabinet Express, etc.). Uses same price tolerance. Config: <code>public/rate-card-types.json</code>.</p>
         </div>
       </div>
 
